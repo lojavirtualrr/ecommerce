@@ -3,7 +3,7 @@
     "authors": [
         {
             "name": "Rodolfo Rodrigues",
-            "email": "contato@lojavirtualrr.com.br"
+            "email": "contato@lojavirtuarr.com.br"
         }
     ],
     "require": {
@@ -13,7 +13,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Hcode\\": "vendor\\hcodebr\\php-classes\\src"
+            "": "vendor\\hcodebr\\php-classes\\src"
         }
     }
 }
