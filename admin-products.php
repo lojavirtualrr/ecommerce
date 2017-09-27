@@ -1,95 +1,126 @@
-<?php
-	
-	use \Hcode\PageAdmin;
-	use \Hcode\Model\User;
-	use \Hcode\Model\Product;
+<?php 
 
-	$app->get("/admin/products", function(){
+use \Hcode\PageAdmin;
+use \Hcode\Model\User;
+use \Hcode\Model\Product;
 
-		User::verifyLogin();
+$app->get("/admin/products", function(){
 
-		$products = Product::listAll();
+	User::verifyLogin();
 
-		$page = new PageAdmin();
+	$search = (isset($_GET['search'])) ? $_GET['search'] : "";
+	$page = (isset($_GET['page'])) ? (int)$_GET['page'] : 1;
 
-		$page->setTpl("products", [
-			"products"=>$products
+	if ($search != '') {
+
+		$pagination = Product::getPageSearch($search, $page);
+
+	} else {
+
+		$pagination = Product::getPage($page);
+
+	}
+
+	$pages = [];
+
+	for ($x = 0; $x < $pagination['pages']; $x++)
+	{
+
+		array_push($pages, [
+			'href'=>'/admin/products?'.http_build_query([
+				'page'=>$x+1,
+				'search'=>$search
+			]),
+			'text'=>$x+1
 		]);
-	});
 
-	$app->get("/admin/products/create", function(){
+	}
 
-		User::verifyLogin();
+	$products = Product::listAll();
 
-		$page = new PageAdmin();
+	$page = new PageAdmin();
 
-		$page->setTpl("products-create");
-	});
+	$page->setTpl("products", [
+		"products"=>$pagination['data'],
+		"search"=>$search,
+		"pages"=>$pages
+	]);
 
-	$app->post("/admin/products/create", function(){
+});
 
-		User::verifyLogin();
+$app->get("/admin/products/create", function(){
 
-		$product = new Product();
+	User::verifyLogin();
 
-		$product->setData($_POST);
+	$page = new PageAdmin();
 
-		$product->save();
+	$page->setTpl("products-create");
 
-		header("Location: /admin/products");
-		exit();
-	});
+});
 
-	$app->get("/admin/products/:idproduct", function($idproduct){
+$app->post("/admin/products/create", function(){
 
-		User::verifyLogin();
+	User::verifyLogin();
 
-		$product = new product();
+	$product = new Product();
 
-		$product->get((int)$idproduct);
+	$product->setData($_POST);
 
-		$page = new PageAdmin();
+	$product->save();
 
-		$page->setTpl("products-update", [
-			'product'=>$product->getValues()
+	header("Location: /admin/products");
+	exit;
 
-		]);
-	});
+});
 
-	$app->post("/admin/products/:idproduct", function($idproduct){
+$app->get("/admin/products/:idproduct", function($idproduct){
 
-		User::verifyLogin();
+	User::verifyLogin();
 
-		$product = new product();
+	$product = new Product();
 
-		$product->get((int)$idproduct);
+	$product->get((int)$idproduct);
 
-		$product->setData($_POST);
+	$page = new PageAdmin();
 
-		$product->save();
+	$page->setTpl("products-update", [
+		'product'=>$product->getValues()
+	]);
 
-		$product->setPhoto($_FILES["file"]);
+});
 
-		header('Location: /admin/products');
-		exit;
+$app->post("/admin/products/:idproduct", function($idproduct){
 
-		
-	});
+	User::verifyLogin();
 
-	$app->get("/admin/products/:idproduct/delete", function($idproduct){
+	$product = new Product();
 
-		User::verifyLogin();
+	$product->get((int)$idproduct);
 
-		$product = new product();
+	$product->setData($_POST);
 
-		$product->get((int)$idproduct);
+	$product->save();
 
-		$product->delete();
+	$product->setPhoto($_FILES["file"]);
 
-		header('Location: /admin/products');
-		exit;
+	header('Location: /admin/products');
+	exit;
 
-		
-	});
+});
 
-?>
+$app->get("/admin/products/:idproduct/delete", function($idproduct){
+
+	User::verifyLogin();
+
+	$product = new Product();
+
+	$product->get((int)$idproduct);
+
+	$product->delete();
+
+	header('Location: /admin/products');
+	exit;
+
+});
+
+ ?>
