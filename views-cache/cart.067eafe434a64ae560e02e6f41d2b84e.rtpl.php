@@ -36,7 +36,7 @@
                                         <th class="product-remove">&nbsp;</th>
                                         <th class="product-thumbnail">&nbsp;</th>
                                         <th class="product-name">Produto</th>
-                                        <th class="product-price">PreÃ§o</th>
+                                        <th class="product-price">Preço</th>
                                         <th class="product-quantity">Quantidade</th>
                                         <th class="product-subtotal">Total</th>
                                     </tr>
@@ -46,7 +46,7 @@
 
                                     <tr class="cart_item">
                                         <td class="product-remove">
-                                            <a title="Remove this item" class="remove" href="/cart/<?php echo htmlspecialchars( $value1["idproduct"], ENT_COMPAT, 'UTF-8', FALSE ); ?>/remove">Ã—</a> 
+                                            <a title="Remove this item" class="remove" href="/cart/<?php echo htmlspecialchars( $value1["idproduct"], ENT_COMPAT, 'UTF-8', FALSE ); ?>/remove">X</a> 
                                         </td>
 
                                         <td class="product-thumbnail">
