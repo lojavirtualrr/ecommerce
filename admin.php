@@ -1,116 +1,111 @@
-<?php 
-
+<?php
+//use \Hcode\Page; //tem que ser declarado o namespace no inicio da página que esta a classe no caso é namespace Page no arquivo Page;
 use \Hcode\PageAdmin;
 use \Hcode\Model\User;
 
-$app->get('/admin', function() {
+//rotas referêntes a parte de administração
+
+$app->get('/admin', function(){ //rota para o admin no modo produÃ§Ã£o usar nome diferente de admin
+    //verifica se o usuÃ¡rio estÃ¡ logado
+    User::verifyLogin();
     
-	User::verifyLogin();
-
-	$page = new PageAdmin();
-
-	$page->setTpl("index");
-
+    $page = new PageAdmin();
+    
+    $page->setTpl("index");
 });
-
-$app->get('/admin/login', function() {
-
-	$page = new PageAdmin([
-		"header"=>false,
-		"footer"=>false
-	]);
-
-	$page->setTpl("login");
-
+    
+$app->get('/admin/login', function(){ //rota para o login
+    $page = new PageAdmin([ //para desabilitar o header e o footer
+        "header"=>false,
+        "footer"=>false
+    ]);
+    
+    $page->setTpl("login");
 });
-
-$app->post('/admin/login', function() {
-
-	User::login($_POST["login"], $_POST["password"]);
-
-	header("Location: /admin");
-	exit;
-
+        
+//mÃ©todo posto do formulÃ¡rio de login
+$app->post('/admin/login', function(){ //rota para o validaÃ§Ã£o do formulÃ¡rio de login
+    User::login($_POST["login"], $_POST["password"]);
+    
+    header("Location: /admin");
+    exit; //pra parar a execuÃ§Ã£o aqui
 });
-
-$app->get('/admin/logout', function() {
-
-	User::logout();
-
-	header("Location: /admin/login");
-	exit;
-
+            
+//rota pra fazer logout
+$app->get('/admin/logout', function(){
+    User::logout();
+    
+    header("Location: /admin/login");
+    exit();
 });
-
-$app->get("/admin/forgot", function() {
-
-	$page = new PageAdmin([
-		"header"=>false,
-		"footer"=>false
-	]);
-
-	$page->setTpl("forgot");	
-
+            
+//rotas esqueceu a senha e redefinição ============================
+$app->get("/admin/forgot", function(){
+    $page = new PageAdmin([ //para desabilitar o header e o footer
+        "header"=>false,
+        "footer"=>false
+    ]);
+    
+    $page->setTpl("forgot");
 });
-
+                    
 $app->post("/admin/forgot", function(){
-
-	$user = User::getForgot($_POST["email"]);
-
-	header("Location: /admin/forgot/sent");
-	exit;
-
+    $user = User::getForgot($_POST["email"]);
+    
+    header("Location: /admin/forgot/sent");
+    exit;
 });
-
+                        
 $app->get("/admin/forgot/sent", function(){
-
-	$page = new PageAdmin([
-		"header"=>false,
-		"footer"=>false
-	]);
-
-	$page->setTpl("forgot-sent");	
-
+    $page = new PageAdmin([ //para desabilitar o header e o footer
+        "header"=>false,
+        "footer"=>false
+    ]);
+    
+    $page->setTpl("forgot-sent");
 });
-
-
+                            
 $app->get("/admin/forgot/reset", function(){
-
-	$user = User::validForgotDecrypt($_GET["code"]);
-
-	$page = new PageAdmin([
-		"header"=>false,
-		"footer"=>false
-	]);
-
-	$page->setTpl("forgot-reset", array(
-		"name"=>$user["desperson"],
-		"code"=>$_GET["code"]
-	));
-
+    //verificando o código do email enviado pra recuperação de senha
+    $user = User::validForgotDecrypt($_GET["code"]);
+    
+    //rota
+    $page = new PageAdmin([ //para desabilitar o header e o footer
+        "header"=>false,
+        "footer"=>false
+    ]);
+    
+    $page->setTpl("forgot-reset", array(
+        "name"=>$user["desperson"],
+        "code"=>$_GET["code"]
+    ));
 });
-
+    
 $app->post("/admin/forgot/reset", function(){
-
-	$forgot = User::validForgotDecrypt($_POST["code"]);	
-
-	User::setFogotUsed($forgot["idrecovery"]);
-
-	$user = new User();
-
-	$user->get((int)$forgot["iduser"]);
-
-	$password = User::getPasswordHash($_POST["password"]);
-
-	$user->setPassword($password);
-
-	$page = new PageAdmin([
-		"header"=>false,
-		"footer"=>false
-	]);
-
-	$page->setTpl("forgot-reset-success");
-
+    //verificando o código do email enviado pra recuperação de senha
+    $forgot = User::validForgotDecrypt($_POST["code"]);
+    
+    //vai falar se esse processo de recuperação já foi usado e pra não recuperar de novo
+    User::setForgotUsed($forgot["idrecovery"]);
+    
+    //agora vai realmente mudar a senha
+    $user = new User();
+    
+    $user->get((int)$forgot["iduser"]);
+    
+    //criptografando a senha http://php.net/manual/pt_BR/function.password-hash.php
+    $password = password_hash($_POST["password"], PASSWORD_DEFAULT, [
+        "cost"=>8 //quantidade de processamento pra gerar a senha padrão é 12
+    ]);
+    
+    $user->setPassword($password); //vai salvar o hash dessa senha no banco
+    
+    //rota
+    $page = new PageAdmin([ //para desabilitar o header e o footer
+        "header"=>false,
+        "footer"=>false
+    ]);
+    
+    $page->setTpl("forgot-reset-success");
 });
-
- ?>
+?>
